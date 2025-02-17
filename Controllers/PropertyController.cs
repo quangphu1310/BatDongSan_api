@@ -27,16 +27,16 @@ namespace BatDongSan_api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> GetProperties(
-    [FromQuery] string? title,
-    [FromQuery] int? room,
-    [FromQuery] decimal? fromSquare,
-    [FromQuery] decimal? toSquare,
-    [FromQuery] string? province,
-    [FromQuery] string? district,
-    [FromQuery] decimal? fromPrice,
-    [FromQuery] decimal? toPrice,
-    int pageSize = 2, int pageNumber = 1
-)
+            [FromQuery] string? title,
+            [FromQuery] int? room,
+            [FromQuery] decimal? fromSquare,
+            [FromQuery] decimal? toSquare,
+            [FromQuery] string? province,
+            [FromQuery] string? district,
+            [FromQuery] decimal? fromPrice,
+            [FromQuery] decimal? toPrice,
+            int pageSize = 2, int pageNumber = 1
+        )
         {
             try
             {
@@ -101,6 +101,41 @@ namespace BatDongSan_api.Controllers
             }
         }
 
-
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<APIResponse>> GetPropertyById(int id)
+        {
+            try
+            {
+                if(id <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.Errors = new List<string> { "Invalid property id" };
+                    return BadRequest(_response);
+                }
+                var property = await _proRepo.GetAsync(x => x.Id == id);
+                if (property == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.Errors = new List<string>() { "Property not found" };
+                    return NotFound(_response);
+                }
+                _response.Result = property;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.IsSuccess = true;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Errors = new List<string> { ex.Message };
+                return BadRequest(_response);
+            }
+        }
+        
     }
 }
