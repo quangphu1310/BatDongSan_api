@@ -22,7 +22,7 @@ namespace BatDongSan_api.Models.DTO
         public string Address { get; set; }
 
         public int? DistrictId { get; set; }
-
+        public List<IFormFile>? Files { get; set; }
         //[ForeignKey("DistrictId")]
         //public District District { get; set; }
     }

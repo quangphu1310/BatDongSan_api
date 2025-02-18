@@ -14,5 +14,6 @@ namespace BatDongSan_api.Models
 
         [ForeignKey(nameof(PropertyId))]
         public Property Property { get; set; }
+        public string ImagePublicId { get; set; }
     }
 }

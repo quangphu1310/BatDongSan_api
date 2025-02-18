@@ -3,11 +3,14 @@ using Azure;
 using BatDongSan_api.Models;
 using BatDongSan_api.Models.DTO;
 using BatDongSan_api.Repository.IRepository;
+using CloudinaryDotNet.Actions;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 
 namespace BatDongSan_api.Controllers
@@ -19,12 +22,16 @@ namespace BatDongSan_api.Controllers
         private readonly APIResponse _response;
         private readonly IPropertyRepository _proRepo;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly IPropertyImageRepository _proImageRepo;
 
-        public PropertyController(IPropertyRepository proRepo, IMapper mapper)
+        public PropertyController(IPropertyRepository proRepo, IMapper mapper, IConfiguration configuration, IPropertyImageRepository proImageRepo)
         {
             _response = new APIResponse();
             _proRepo = proRepo;
+            _configuration = configuration;
             _mapper = mapper;
+            _proImageRepo = proImageRepo;
         }
 
         [HttpGet]
@@ -151,7 +158,8 @@ namespace BatDongSan_api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> CreateProperty([FromBody] PropertyCreateDTO propertyDto)
+        //[Consumes("multipart/form-data")]
+        public async Task<ActionResult<APIResponse>> CreateProperty([FromForm] PropertyCreateDTO propertyDto)
         {
             try
             {
@@ -166,7 +174,30 @@ namespace BatDongSan_api.Controllers
                 var property = _mapper.Map<Property>(propertyDto);
 
                 await _proRepo.CreateAsync(property);
-                _response.Result = propertyDto;
+                if (propertyDto.Files != null)
+                {
+                    foreach (var file in propertyDto.Files)
+                    {
+                        var propertyImage = new PropertyImage
+                        {
+                            PropertyId = property.Id
+                        };
+                        var cloudinary = new Cloudinary(new Account(
+                        cloud: _configuration.GetSection("Cloudinary:CloudName").Value,
+                        apiKey: _configuration.GetSection("Cloudinary:ApiKey").Value,
+                        apiSecret: _configuration.GetSection("Cloudinary:ApiSecret").Value
+                        ));
+                        var uploadParams = new ImageUploadParams()
+                        {
+                            File = new FileDescription(file.FileName, file.OpenReadStream())
+                        };
+                        var uploadResult = cloudinary.Upload(uploadParams);
+                        propertyImage.ImageUrl = uploadResult.Url.ToString();
+                        propertyImage.ImagePublicId = uploadResult.PublicId;
+                        await _proImageRepo.CreateAsync(propertyImage);
+                    }
+                }
+                _response.Result = property;
                 _response.StatusCode = HttpStatusCode.Created;
                 _response.IsSuccess = true;
 
@@ -179,6 +210,7 @@ namespace BatDongSan_api.Controllers
                 return BadRequest(_response);
             }
         }
+
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -243,7 +275,26 @@ namespace BatDongSan_api.Controllers
                     _response.Errors = new List<string> { "Property not found" };
                     return NotFound(_response);
                 }
+                var cloudinary = new Cloudinary(new Account(
+                        cloud: _configuration.GetSection("Cloudinary:CloudName").Value,
+                        apiKey: _configuration.GetSection("Cloudinary:ApiKey").Value,
+                        apiSecret: _configuration.GetSection("Cloudinary:ApiSecret").Value
+                        ));
+                var oldImages = await _proImageRepo.GetAllAsync(x => x.PropertyId == id);
+                foreach (var oldImage in oldImages)
+                {
+                    if (!string.IsNullOrEmpty(oldImage.ImagePublicId))
+                    {
+                        var deletionParams = new DeletionParams(oldImage.ImagePublicId);
+                        var deletionResult = cloudinary.Destroy(deletionParams);
+                        if (deletionResult.Result != "ok")
+                        {
+                            _response.Errors.Add($"Failed to delete image {oldImage.ImagePublicId} on Cloudinary.");
+                        }
+                    }
 
+                    await _proImageRepo.RemoveAsync(oldImage);
+                }
                 await _proRepo.RemoveAsync(user);
 
                 _response.StatusCode = HttpStatusCode.OK;
