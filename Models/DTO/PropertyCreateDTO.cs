@@ -1,13 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace BatDongSan_api.Models
+namespace BatDongSan_api.Models.DTO
 {
-    public class Property
+    public class PropertyCreateDTO
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required]
         [MaxLength(255)]
         public string Title { get; set; }
@@ -26,10 +23,7 @@ namespace BatDongSan_api.Models
 
         public int? DistrictId { get; set; }
 
-        [ForeignKey("DistrictId")]
-        public District District { get; set; }
-
-        [Column(TypeName = "date")]
-        public DateTime? PostedDate { get; set; }
+        //[ForeignKey("DistrictId")]
+        //public District District { get; set; }
     }
 }

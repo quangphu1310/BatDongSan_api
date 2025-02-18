@@ -17,6 +17,7 @@ namespace BatDongSan_api.Repository
 
         public async Task<Property> CreateAsync(Property entity)
         {
+            entity.PostedDate = DateTime.Now;
             _db.Properties.Add(entity);
             await _db.SaveChangesAsync();
             return entity;
@@ -24,6 +25,7 @@ namespace BatDongSan_api.Repository
 
         public async Task<Property> UpdateAsync(Property entity)
         {
+            entity.PostedDate = DateTime.Now;
             _db.Properties.Update(entity);
             await _db.SaveChangesAsync();
             return entity;

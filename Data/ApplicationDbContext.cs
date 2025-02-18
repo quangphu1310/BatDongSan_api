@@ -11,5 +11,8 @@ namespace BatDongSan_api.Data
         { }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Property> Properties { get; set; }
+        public DbSet<Province> Provinces { get; set; }
+        public DbSet<District> Districts { get; set; }
+
     }
 }

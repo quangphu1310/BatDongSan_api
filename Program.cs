@@ -1,3 +1,4 @@
+using BatDongSan_api;
 using BatDongSan_api.Data;
 using BatDongSan_api.Repository;
 using BatDongSan_api.Repository.IRepository;
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 var app = builder.Build();
 
