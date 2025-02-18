@@ -14,5 +14,7 @@ namespace BatDongSan_api.Data
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
 
+        public DbSet<PropertyImage> PropertyImages { get; set; }
+
     }
 }

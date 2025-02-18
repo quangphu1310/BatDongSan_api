@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace BatDongSan_api.Models
 {
@@ -31,5 +32,7 @@ namespace BatDongSan_api.Models
 
         [Column(TypeName = "date")]
         public DateTime? PostedDate { get; set; }
+        [ValidateNever]
+        public List<PropertyImage> PropertyImages { get; set; }
     }
 }

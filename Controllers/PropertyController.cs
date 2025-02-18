@@ -223,7 +223,7 @@ namespace BatDongSan_api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> DeleteUser(int id)
+        public async Task<ActionResult<APIResponse>> DeleteProperty(int id)
         {
             try
             {
