@@ -96,8 +96,8 @@ namespace BatDongSan_api.Controllers
                 int totalRecords = await query.CountAsync();
 
                 var properties = await query
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
+                    //.Skip((pageNumber - 1) * pageSize)
+                    //.Take(pageSize)
                     .Include(x => x.District.Province)
                     .Include(x => x.PropertyImages)
                     .ToListAsync();
