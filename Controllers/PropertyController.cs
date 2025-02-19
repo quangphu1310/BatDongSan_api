@@ -99,6 +99,7 @@ namespace BatDongSan_api.Controllers
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .Include(x => x.District.Province)
+                    .Include(x => x.PropertyImages)
                     .ToListAsync();
 
                 _response.Result = new
@@ -206,7 +207,7 @@ namespace BatDongSan_api.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Errors = new List<string> { ex.Message };
+                _response.Errors = new List<string> { ex.InnerException?.Message ?? ex.Message };
                 return BadRequest(_response);
             }
         }
